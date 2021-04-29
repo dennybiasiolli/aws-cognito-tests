@@ -1,11 +1,17 @@
 <template>
-  <div id="app">
-    <div id="nav">
-      <router-link to="/">Home</router-link> |
-      <router-link to="/about">About</router-link>
+  <amplify-authenticator>
+    <amplify-sign-in slot="sign-in" hide-sign-up="true"></amplify-sign-in>
+
+    <template #sign-up> </template>
+    <div id="app">
+      <div id="nav">
+        <router-link to="/">Home</router-link> |
+        <router-link to="/about">About</router-link>
+        <amplify-sign-out></amplify-sign-out>
+      </div>
+      <router-view />
     </div>
-    <router-view/>
-  </div>
+  </amplify-authenticator>
 </template>
 
 <style>
