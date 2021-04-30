@@ -14,6 +14,19 @@
   </amplify-authenticator>
 </template>
 
+<script>
+import { Auth } from 'aws-amplify';
+
+export default {
+  async mounted() {
+    const accessToken = (await Auth.currentSession())
+      .getAccessToken()
+      .getJwtToken();
+    console.log(accessToken);
+  },
+};
+</script>
+
 <style>
 #app {
   font-family: Avenir, Helvetica, Arial, sans-serif;
