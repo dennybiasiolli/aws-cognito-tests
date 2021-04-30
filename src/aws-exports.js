@@ -38,8 +38,8 @@ export default {
     oauth: {
       domain: process.env.VUE_APP_AWS_OAUTH_DOMAIN,
       scope: ['email', 'profile', 'openid', 'aws.cognito.signin.user.admin'],
-      redirectSignIn: `${process.env.VUE_APP_URL}/callback`,
-      redirectSignOut: `${process.env.VUE_APP_URL}/`,
+      redirectSignIn: `${process.env.VUE_APP_URL}`,
+      redirectSignOut: `${process.env.VUE_APP_URL}`,
       responseType: 'code', // or 'token', note that REFRESH token will only be generated when the responseType is code
     },
     signInConfig: {

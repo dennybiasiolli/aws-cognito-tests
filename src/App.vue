@@ -1,28 +1,53 @@
 <template>
-  <amplify-authenticator>
-    <amplify-sign-in slot="sign-in" hide-sign-up="true"></amplify-sign-in>
-
-    <template #sign-up> </template>
-    <div id="app">
-      <div id="nav">
-        <router-link to="/">Home</router-link> |
-        <router-link to="/about">About</router-link>
-        <amplify-sign-out></amplify-sign-out>
-      </div>
-      <router-view />
+  <div v-if="isAuthenticated" id="app">
+    <div id="nav">
+      <router-link to="/">Home</router-link> |
+      <router-link to="/about">About</router-link> |
+      <button @click="handleSignOut">Logout</button>
     </div>
-  </amplify-authenticator>
+    <router-view />
+  </div>
 </template>
 
 <script>
 import { Auth } from 'aws-amplify';
+import axios from 'axios';
 
 export default {
+  data() {
+    return {
+      isAuthenticated: false,
+    };
+  },
   async mounted() {
-    const accessToken = (await Auth.currentSession())
-      .getAccessToken()
-      .getJwtToken();
-    console.log(accessToken);
+    try {
+      const accessToken = (await Auth.currentSession())
+        .getAccessToken()
+        .getJwtToken();
+
+      const { data } = await axios.get(
+        `${process.env.VUE_APP_API}/api/v1/users/me/`,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+          params: { expand: 'account' },
+        },
+      );
+      console.log(data);
+
+      this.isAuthenticated = true;
+    } catch (err) {
+      localStorage.setItem('REDIRECT_KEY_NAME', this.$route.fullPath);
+      Auth.federatedSignIn({
+        customState: 'REDIRECT_KEY_NAME',
+      });
+    }
+  },
+  methods: {
+    handleSignOut() {
+      Auth.signOut();
+    },
   },
 };
 </script>
