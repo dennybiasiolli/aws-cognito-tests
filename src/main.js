@@ -1,4 +1,4 @@
-import Amplify, { Hub } from 'aws-amplify';
+import Amplify, { Auth, Hub } from 'aws-amplify';
 import Vue from 'vue';
 import App from './App.vue';
 import awsExports from './aws-exports';
@@ -14,22 +14,19 @@ new Vue({
   router,
   store,
   mounted() {
-    Hub.listen('auth', ({ payload: { event, data } }) => {
+    Hub.listen('auth', async ({ payload: { event, data } }) => {
       console.log('Hub', event, data);
-      switch (event) {
-        case 'signIn':
-          break;
-        case 'signOut':
-          break;
-        case 'customOAuthState':
-          if (data === 'REDIRECT_KEY_NAME') {
-            const redirectTo = localStorage.getItem('REDIRECT_KEY_NAME');
-            localStorage.removeItem('REDIRECT_KEY_NAME');
-            this.$router.push(redirectTo);
-          }
-          break;
-        default:
-          break;
+      if (['signIn', 'tokenRefresh'].includes(event)) {
+        const accessToken = (await Auth.currentSession())
+          .getAccessToken()
+          .getJwtToken();
+        console.log('accessToken', accessToken);
+      } else if (event === 'customOAuthState') {
+        if (data === 'REDIRECT_KEY_NAME') {
+          const redirectTo = localStorage.getItem('REDIRECT_KEY_NAME');
+          localStorage.removeItem('REDIRECT_KEY_NAME');
+          this.$router.push(redirectTo);
+        }
       }
     });
   },
