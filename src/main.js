@@ -1,4 +1,5 @@
 import Amplify, { Auth, Hub } from 'aws-amplify';
+import '@aws-amplify/ui-vue';
 import Vue from 'vue';
 import App from './App.vue';
 import awsExports from './aws-exports';

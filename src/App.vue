@@ -1,16 +1,19 @@
 <template>
-  <div v-if="isAuthenticated" id="app">
-    <div id="nav">
-      <router-link to="/">Home</router-link> |
-      <router-link to="/about">About</router-link> |
-      <button @click="handleSignOut">Logout</button>
+  <amplify-authenticator>
+    <amplify-sign-in slot="sign-in" hide-sign-up="true"></amplify-sign-in>
+    <div v-if="isAuthenticated" id="app">
+      <div id="nav">
+        <router-link to="/">Home</router-link> |
+        <router-link to="/about">About</router-link> |
+        <button @click="handleSignOut">Logout</button>
+      </div>
+      <router-view />
     </div>
-    <router-view />
-  </div>
+  </amplify-authenticator>
 </template>
 
 <script>
-import { Auth } from 'aws-amplify';
+import { Auth, Hub } from 'aws-amplify';
 import axios from 'axios';
 
 export default {
@@ -20,6 +23,17 @@ export default {
     };
   },
   async mounted() {
+    const authEventHandler = async ({ payload: { event } }) => {
+      if (
+        ['signOut', 'signIn_failure', 'tokenRefresh_failure'].includes(event)
+      ) {
+        // Auth.signOut();
+      } else {
+        this.isAuthenticated = true;
+      }
+    };
+    Hub.listen('auth', authEventHandler);
+
     try {
       const accessToken = (await Auth.currentSession())
         .getAccessToken()
@@ -32,16 +46,16 @@ export default {
             Authorization: `Bearer ${accessToken}`,
           },
           params: { expand: 'account' },
-        },
+        }
       );
       console.log(data);
 
       this.isAuthenticated = true;
     } catch (err) {
       localStorage.setItem('REDIRECT_KEY_NAME', this.$route.fullPath);
-      Auth.federatedSignIn({
-        customState: 'REDIRECT_KEY_NAME',
-      });
+      // Auth.federatedSignIn({
+      //   customState: 'REDIRECT_KEY_NAME',
+      // });
     }
   },
   methods: {
