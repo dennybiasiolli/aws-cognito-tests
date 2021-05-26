@@ -8,9 +8,9 @@ export default {
     // Required only if it's different from Amazon Cognito Region
     // identityPoolRegion: 'XX-XXXX-X',
     // OPTIONAL - Amazon Cognito User Pool ID
-    userPoolId: process.env.VUE_APP_AWS_USER_POOL_ID,
+    userPoolId: process.env.VUE_APP_AWS_AUTH_POOL_ID,
     // OPTIONAL - Amazon Cognito Web Client ID (26-char alphanumeric string)
-    userPoolWebClientId: process.env.VUE_APP_AWS_USER_POOL_WEB_CLIENT_ID,
+    userPoolWebClientId: process.env.VUE_APP_AWS_AUTH_CLIENT_ID,
     // OPTIONAL - Enforce user authentication prior to accessing AWS resources or not
     mandatorySignIn: true,
     // OPTIONAL - Configuration for cookie storage
@@ -35,15 +35,12 @@ export default {
     // OPTIONAL - Manually set key value pairs that can be passed to Cognito Lambda Triggers
     // clientMetadata: { myCustomKey: 'myCustomValue' },
     // OPTIONAL - Hosted UI configuration
-    oauth: {
-      domain: process.env.VUE_APP_AWS_OAUTH_DOMAIN,
-      scope: ['email', 'profile', 'openid', 'aws.cognito.signin.user.admin'],
-      redirectSignIn: `${process.env.VUE_APP_URL}`,
-      redirectSignOut: `${process.env.VUE_APP_URL}`,
-      responseType: 'code', // or 'token', note that REFRESH token will only be generated when the responseType is code
-    },
-    signInConfig: {
-      isSignUpDisplayed: true,
-    },
+    // oauth: {
+    //   domain: process.env.VUE_APP_AWS_AUTH_DOMAIN,
+    //   scope: ['email', 'profile', 'openid', 'aws.cognito.signin.user.admin'],
+    //   redirectSignIn: `${process.env.VUE_APP_URL}`,
+    //   redirectSignOut: `${process.env.VUE_APP_URL}`,
+    //   responseType: 'code', // or 'token', note that REFRESH token will only be generated when the responseType is code
+    // },
   },
 };

@@ -1,39 +1,63 @@
 <template>
-  <amplify-authenticator>
-    <amplify-sign-in slot="sign-in" hide-sign-up="true"></amplify-sign-in>
-    <div v-if="isAuthenticated" id="app">
-      <div id="nav">
-        <router-link to="/">Home</router-link> |
-        <router-link to="/about">About</router-link> |
-        <button @click="handleSignOut">Logout</button>
+  <div>
+    <amplify-authenticator>
+      <amplify-sign-in slot="sign-in" hide-sign-up="true" />
+      <amplify-totp-setup
+        slot="totp-setup"
+        header-text="My Custom TOTP Setup Text"
+      />
+      <amplify-confirm-sign-in
+        slot="confirm-sign-in"
+        header-text="Enter code from your Authenticator App"
+        :formFields.prop="formFields"
+        :user.prop="user"
+      />
+      <div v-if="authState === 'signedin' && user" id="app">
+        <div id="nav">
+          <router-link to="/">Home</router-link> |
+          <router-link to="/about">About</router-link> |
+          <button @click="handleSignOut">Logout</button>
+        </div>
+        <router-view />
       </div>
-      <router-view />
-    </div>
-  </amplify-authenticator>
+    </amplify-authenticator>
+  </div>
 </template>
 
 <script>
-import { Auth, Hub } from 'aws-amplify';
+import { Auth } from 'aws-amplify';
+import { onAuthUIStateChange } from '@aws-amplify/ui-components';
+
 import axios from 'axios';
 
 export default {
   data() {
     return {
-      isAuthenticated: false,
+      user: undefined,
+      authState: undefined,
+      unsubscribeAuth: undefined,
+      formFields: [
+        {
+          type: 'code',
+          required: true,
+          inputProps: {
+            type: 'text', // specify the actual html input type here
+            inputmode: 'numeric',
+            pattern: '[0-9]*',
+            autocomplete: 'one-time-code',
+            required: true,
+          },
+        },
+      ],
     };
   },
+  created() {
+    this.unsubscribeAuth = onAuthUIStateChange((authState, authData) => {
+      this.authState = authState;
+      this.user = authData;
+    });
+  },
   async mounted() {
-    const authEventHandler = async ({ payload: { event } }) => {
-      if (
-        ['signOut', 'signIn_failure', 'tokenRefresh_failure'].includes(event)
-      ) {
-        // Auth.signOut();
-      } else {
-        this.isAuthenticated = true;
-      }
-    };
-    Hub.listen('auth', authEventHandler);
-
     try {
       const accessToken = (await Auth.currentSession())
         .getAccessToken()
@@ -49,14 +73,15 @@ export default {
         }
       );
       console.log(data);
-
-      this.isAuthenticated = true;
     } catch (err) {
       localStorage.setItem('REDIRECT_KEY_NAME', this.$route.fullPath);
       // Auth.federatedSignIn({
       //   customState: 'REDIRECT_KEY_NAME',
       // });
     }
+  },
+  beforeDestroy() {
+    this.unsubscribeAuth();
   },
   methods: {
     handleSignOut() {
